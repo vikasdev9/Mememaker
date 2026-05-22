@@ -16,7 +16,9 @@ sealed class MemeLayer(
         val imagePath: String?,
         val gifUrl: String? = null,
         var brightness: Float = 1f,
-        var contrast: Float = 1f
+        var contrast: Float = 1f,
+        var saturation: Float = 1f,
+        var maskPaths: List<DrawPath> = emptyList() // For background removal
     ) : MemeLayer()
 
     data class TextLayer(

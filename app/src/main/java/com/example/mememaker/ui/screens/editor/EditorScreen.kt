@@ -24,6 +24,7 @@ import coil.compose.AsyncImage
 import com.example.mememaker.domain.model.MemeLayer
 import com.example.mememaker.util.rememberImagePicker
 
+import com.example.mememaker.ui.screens.editor.components.ImageAdjustSheet
 import com.example.mememaker.ui.screens.editor.components.LayerListSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,6 +35,7 @@ fun EditorScreen(
     val layers by viewModel.layers.collectAsState()
     val selectedLayerId by viewModel.selectedLayerId.collectAsState()
     var showLayerSheet by remember { mutableStateOf(false) }
+    var showAdjustSheet by remember { mutableStateOf(false) }
 
     val imagePicker = rememberImagePicker { uri ->
         viewModel.addLayer(MemeLayer.ImageLayer(imagePath = uri.toString()))
@@ -48,6 +50,21 @@ fun EditorScreen(
                 onDelete = { /* viewModel.deleteLayer(it) */ },
                 onSelect = { viewModel.selectLayer(it); showLayerSheet = false }
             )
+        }
+    }
+
+    if (showAdjustSheet) {
+        val selectedLayer = layers.find { it.id == selectedLayerId }
+        if (selectedLayer is MemeLayer.ImageLayer) {
+            ModalBottomSheet(onDismissRequest = { showAdjustSheet = false }) {
+                ImageAdjustSheet(
+                    brightness = selectedLayer.brightness,
+                    contrast = selectedLayer.contrast,
+                    onBrightnessChange = { viewModel.updateImageFilter(selectedLayer.id, brightness = it) },
+                    onContrastChange = { viewModel.updateImageFilter(selectedLayer.id, contrast = it) },
+                    onClose = { showAdjustSheet = false }
+                )
+            }
         }
     }
 
@@ -72,7 +89,8 @@ fun EditorScreen(
             EditorBottomBar(
                 onAddText = { viewModel.addLayer(MemeLayer.TextLayer("New Text")) },
                 onAddImage = { imagePicker() },
-                onDelete = { viewModel.deleteSelectedLayer() }
+                onDelete = { viewModel.deleteSelectedLayer() },
+                onAdjust = { showAdjustSheet = true }
             )
         }
     ) { paddingValues ->
@@ -182,7 +200,12 @@ fun LayerComponent(
 }
 
 @Composable
-fun EditorBottomBar(onAddText: () -> Unit, onAddImage: () -> Unit, onDelete: () -> Unit) {
+fun EditorBottomBar(
+    onAddText: () -> Unit,
+    onAddImage: () -> Unit,
+    onDelete: () -> Unit,
+    onAdjust: () -> Unit
+) {
     BottomAppBar {
         IconButton(onClick = onAddText) {
             Icon(Icons.Default.TextFields, contentDescription = "Add Text")
@@ -192,6 +215,9 @@ fun EditorBottomBar(onAddText: () -> Unit, onAddImage: () -> Unit, onDelete: () 
         }
         IconButton(onClick = { /* Add Sticker */ }) {
             Icon(Icons.Default.AddReaction, contentDescription = "Add Sticker")
+        }
+        IconButton(onClick = onAdjust) {
+            Icon(Icons.Default.Tune, contentDescription = "Adjust")
         }
         Spacer(Modifier.weight(1f))
         IconButton(onClick = onDelete) {

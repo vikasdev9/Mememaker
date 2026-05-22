@@ -90,19 +90,11 @@ class EditorViewModel @Inject constructor(
         }
     }
 
-    fun updateTextProperties(
-        id: String,
-        color: Color? = null,
-        fontSize: Float? = null,
-        outlineColor: Color? = null,
-        opacity: Float? = null
-    ) {
+    fun updateImageFilter(id: String, brightness: Float? = null, contrast: Float? = null) {
         _layers.value = _layers.value.map { layer ->
-            if (layer.id == id && layer is MemeLayer.TextLayer) {
-                color?.let { layer.color = it }
-                fontSize?.let { layer.fontSize = it }
-                outlineColor?.let { layer.outlineColor = it }
-                opacity?.let { layer.opacity = it }
+            if (layer.id == id && layer is MemeLayer.ImageLayer) {
+                brightness?.let { layer.brightness = it }
+                contrast?.let { layer.contrast = it }
                 layer
             } else layer
         }
