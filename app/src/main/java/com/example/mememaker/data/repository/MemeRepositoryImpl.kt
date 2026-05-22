@@ -20,9 +20,9 @@ class MemeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun searchGifs(query: String, pos: String?): Result<Pair<List<GifModel>, String>> {
+    override suspend fun searchGifs(query: String, pos: String?, searchFilter: String?): Result<Pair<List<GifModel>, String>> {
         return try {
-            val response = apiService.searchGifs(query = query, apiKey = API_KEY, pos = pos)
+            val response = apiService.searchGifs(query = query, apiKey = API_KEY, pos = pos, searchFilter = searchFilter)
             Result.success(response.results.map { it.toDomain() } to response.next)
         } catch (e: Exception) {
             Result.failure(e)

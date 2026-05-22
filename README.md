@@ -75,6 +75,17 @@ com.example.mememaker/
 - **Clean Experience**: Ad-free editing and watermark removal for premium users.
 - **Monetization**: Integrated with AdMob (Banner, Interstitial, and Reward ads).
 
+## ✅ MVP Checklist
+- [x] Full App Architecture (MVVM + Hilt)
+- [x] Folder Structure setup
+- [x] Database Structure (Room)
+- [x] Tenor API Integration (GIF & Stickers)
+- [x] Multi-layer Editor skeleton (Drag, Scale, Rotate)
+- [x] Image picking from Gallery
+- [x] Basic Drawing support
+- [x] Dark Mode support
+- [x] AdMob Initialization
+
 ---
 
 ## 📜 License

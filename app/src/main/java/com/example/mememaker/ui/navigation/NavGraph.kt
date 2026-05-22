@@ -8,6 +8,7 @@ import androidx.navigation.navArgument
 import com.example.mememaker.ui.screens.editor.EditorScreen
 import com.example.mememaker.ui.screens.gif.GifSearchScreen
 import com.example.mememaker.ui.screens.home.HomeScreen
+import com.example.mememaker.ui.screens.sticker.StickerSearchScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -45,7 +46,11 @@ fun NavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.StickerSearch.route) {
-            // Placeholder for StickerSearchScreen
+            StickerSearchScreen(
+                onStickerSelected = { stickerUrl ->
+                    navController.navigate(Screen.Editor.createRoute(gifUrl = stickerUrl))
+                }
+            )
         }
     }
 }

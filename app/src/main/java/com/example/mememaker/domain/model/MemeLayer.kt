@@ -27,4 +27,9 @@ sealed class MemeLayer(
     data class StickerLayer(
         val stickerUrl: String
     ) : MemeLayer()
+    data class DrawingLayer(
+        val points: List<androidx.compose.ui.geometry.Offset>,
+        val color: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Black,
+        val strokeWidth: Float = 5f
+    ) : MemeLayer()
 }

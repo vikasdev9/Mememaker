@@ -1,5 +1,6 @@
 package com.example.mememaker.ui.screens.editor
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -11,6 +12,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -18,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.mememaker.domain.model.MemeLayer
+import com.example.mememaker.util.rememberImagePicker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +31,10 @@ fun EditorScreen(
 ) {
     val layers by viewModel.layers.collectAsState()
     val selectedLayerId by viewModel.selectedLayerId.collectAsState()
+
+    val imagePicker = rememberImagePicker { uri ->
+        viewModel.addLayer(MemeLayer.ImageLayer(imagePath = uri.toString()))
+    }
 
     Scaffold(
         topBar = {
@@ -44,6 +53,7 @@ fun EditorScreen(
         bottomBar = {
             EditorBottomBar(
                 onAddText = { viewModel.addLayer(MemeLayer.TextLayer("New Text")) },
+                onAddImage = { imagePicker() },
                 onDelete = { viewModel.deleteSelectedLayer() }
             )
         }
@@ -130,15 +140,33 @@ fun LayerComponent(
                     modifier = Modifier.size(100.dp)
                 )
             }
+            is MemeLayer.DrawingLayer -> {
+                androidx.compose.foundation.Canvas(modifier = Modifier.size(200.dp)) {
+                    val path = Path().apply {
+                        if (layer.points.isNotEmpty()) {
+                            moveTo(layer.points.first().x, layer.points.first().y)
+                            layer.points.drop(1).forEach { lineTo(it.x, it.y) }
+                        }
+                    }
+                    drawPath(
+                        path = path,
+                        color = layer.color,
+                        style = Stroke(width = layer.strokeWidth, cap = StrokeCap.Round)
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun EditorBottomBar(onAddText: () -> Unit, onDelete: () -> Unit) {
+fun EditorBottomBar(onAddText: () -> Unit, onAddImage: () -> Unit, onDelete: () -> Unit) {
     BottomAppBar {
         IconButton(onClick = onAddText) {
             Icon(Icons.Default.TextFields, contentDescription = "Add Text")
+        }
+        IconButton(onClick = onAddImage) {
+            Icon(Icons.Default.Image, contentDescription = "Add Image")
         }
         IconButton(onClick = { /* Add Sticker */ }) {
             Icon(Icons.Default.AddReaction, contentDescription = "Add Sticker")
