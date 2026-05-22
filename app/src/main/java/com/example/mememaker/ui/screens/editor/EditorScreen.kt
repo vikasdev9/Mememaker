@@ -24,6 +24,8 @@ import coil.compose.AsyncImage
 import com.example.mememaker.domain.model.MemeLayer
 import com.example.mememaker.util.rememberImagePicker
 
+import com.example.mememaker.ui.screens.editor.components.LayerListSheet
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorScreen(
@@ -31,9 +33,22 @@ fun EditorScreen(
 ) {
     val layers by viewModel.layers.collectAsState()
     val selectedLayerId by viewModel.selectedLayerId.collectAsState()
+    var showLayerSheet by remember { mutableStateOf(false) }
 
     val imagePicker = rememberImagePicker { uri ->
         viewModel.addLayer(MemeLayer.ImageLayer(imagePath = uri.toString()))
+    }
+
+    if (showLayerSheet) {
+        ModalBottomSheet(onDismissRequest = { showLayerSheet = false }) {
+            LayerListSheet(
+                layers = layers,
+                onToggleLock = { viewModel.toggleLayerLock(it) },
+                onToggleVisibility = { viewModel.toggleLayerVisibility(it) },
+                onDelete = { /* viewModel.deleteLayer(it) */ },
+                onSelect = { viewModel.selectLayer(it); showLayerSheet = false }
+            )
+        }
     }
 
     Scaffold(
@@ -41,6 +56,9 @@ fun EditorScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Meme Editor") },
                 actions = {
+                    IconButton(onClick = { showLayerSheet = true }) {
+                        Icon(Icons.Default.Layers, contentDescription = "Layers")
+                    }
                     IconButton(onClick = { viewModel.undo() }) {
                         Icon(Icons.Default.Undo, contentDescription = "Undo")
                     }
@@ -77,14 +95,16 @@ fun EditorScreen(
                     }
             ) {
                 layers.forEach { layer ->
-                    LayerComponent(
-                        layer = layer,
-                        isSelected = layer.id == selectedLayerId,
-                        onSelect = { viewModel.selectLayer(layer.id) },
-                        onTransform = { offset, scale, rotation ->
-                            viewModel.updateLayerTransform(layer.id, offset, scale, rotation)
-                        }
-                    )
+                    if (layer.isVisible) {
+                        LayerComponent(
+                            layer = layer,
+                            isSelected = layer.id == selectedLayerId,
+                            onSelect = { viewModel.selectLayer(layer.id) },
+                            onTransform = { offset, scale, rotation ->
+                                viewModel.updateLayerTransform(layer.id, offset, scale, rotation)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -142,17 +162,19 @@ fun LayerComponent(
             }
             is MemeLayer.DrawingLayer -> {
                 androidx.compose.foundation.Canvas(modifier = Modifier.size(200.dp)) {
-                    val path = Path().apply {
-                        if (layer.points.isNotEmpty()) {
-                            moveTo(layer.points.first().x, layer.points.first().y)
-                            layer.points.drop(1).forEach { lineTo(it.x, it.y) }
+                    layer.paths.forEach { drawPath ->
+                        val path = Path().apply {
+                            if (drawPath.points.isNotEmpty()) {
+                                moveTo(drawPath.points.first().x, drawPath.points.first().y)
+                                drawPath.points.drop(1).forEach { lineTo(it.x, it.y) }
+                            }
                         }
+                        drawPath(
+                            path = path,
+                            color = drawPath.color,
+                            style = Stroke(width = drawPath.strokeWidth, cap = StrokeCap.Round)
+                        )
                     }
-                    drawPath(
-                        path = path,
-                        color = layer.color,
-                        style = Stroke(width = layer.strokeWidth, cap = StrokeCap.Round)
-                    )
                 }
             }
         }

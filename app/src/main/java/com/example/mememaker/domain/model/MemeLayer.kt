@@ -14,22 +14,36 @@ sealed class MemeLayer(
 ) {
     data class ImageLayer(
         val imagePath: String?,
-        val gifUrl: String? = null
+        val gifUrl: String? = null,
+        var brightness: Float = 1f,
+        var contrast: Float = 1f
     ) : MemeLayer()
 
     data class TextLayer(
         var text: String,
         var color: Color = Color.Black,
         var fontSize: Float = 24f,
-        var fontStyle: String = "Default"
+        var fontStyle: String = "Default",
+        var outlineColor: Color = Color.Transparent,
+        var outlineWidth: Float = 0f,
+        var shadowColor: Color = Color.Transparent,
+        var shadowRadius: Float = 0f,
+        var opacity: Float = 1f,
+        var isCurved: Boolean = false
     ) : MemeLayer()
 
     data class StickerLayer(
         val stickerUrl: String
     ) : MemeLayer()
+
     data class DrawingLayer(
-        val points: List<androidx.compose.ui.geometry.Offset>,
-        val color: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Black,
-        val strokeWidth: Float = 5f
+        val paths: List<DrawPath> = emptyList()
     ) : MemeLayer()
 }
+
+data class DrawPath(
+    val points: List<androidx.compose.ui.geometry.Offset>,
+    val color: androidx.compose.ui.graphics.Color,
+    val strokeWidth: Float,
+    val isEraser: Boolean = false
+)

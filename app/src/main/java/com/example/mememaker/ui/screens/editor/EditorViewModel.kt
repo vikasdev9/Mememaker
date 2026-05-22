@@ -1,6 +1,7 @@
 package com.example.mememaker.ui.screens.editor
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.mememaker.domain.model.MemeLayer
@@ -61,6 +62,50 @@ class EditorViewModel @Inject constructor(
         saveToHistory()
         _layers.value = _layers.value.filter { it.id != selectedId }
         _selectedLayerId.value = null
+    }
+
+    fun updateLayerOrder(fromIndex: Int, toIndex: Int) {
+        saveToHistory()
+        val list = _layers.value.toMutableList()
+        val item = list.removeAt(fromIndex)
+        list.add(toIndex, item)
+        _layers.value = list
+    }
+
+    fun toggleLayerLock(id: String) {
+        _layers.value = _layers.value.map { layer ->
+            if (layer.id == id) {
+                layer.isLocked = !layer.isLocked
+                layer
+            } else layer
+        }
+    }
+
+    fun toggleLayerVisibility(id: String) {
+        _layers.value = _layers.value.map { layer ->
+            if (layer.id == id) {
+                layer.isVisible = !layer.isVisible
+                layer
+            } else layer
+        }
+    }
+
+    fun updateTextProperties(
+        id: String,
+        color: Color? = null,
+        fontSize: Float? = null,
+        outlineColor: Color? = null,
+        opacity: Float? = null
+    ) {
+        _layers.value = _layers.value.map { layer ->
+            if (layer.id == id && layer is MemeLayer.TextLayer) {
+                color?.let { layer.color = it }
+                fontSize?.let { layer.fontSize = it }
+                outlineColor?.let { layer.outlineColor = it }
+                opacity?.let { layer.opacity = it }
+                layer
+            } else layer
+        }
     }
 
     private fun saveToHistory() {
